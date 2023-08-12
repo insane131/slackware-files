@@ -1,0 +1,39 @@
+#!/bin/sh
+# Start/stop/restart the bridge to VM VLAN 
+
+vmnet_start() {
+  /sbin/vconfig add eth0 112
+  /usr/sbin/brctl addbr br0
+  /usr/sbin/brctl addif br0 eth0.112
+  /sbin/ifconfig eth0.112 up
+  /sbin/ifconfig br0 up
+}
+
+vmnet_stop() {
+  /sbin/ifconfig br0 down
+  /sbin/ifconfig eth0.112 down 
+  /usr/sbin/brctl delif br0 eth0.112
+  /usr/sbin/brctl delbr br0
+  /sbin/vconfig rem eth0.112
+}
+
+vmnet_restart() {
+  vmnet_stop
+  sleep 1
+  vmnet_start
+}
+
+case "$1" in
+'start')
+  vmnet_start
+  ;;
+'stop')
+  vmnet_stop
+  ;;
+'restart')
+  vmnet_restart
+  ;;
+*)
+  echo "usage $0 start|stop|restart"
+esac
+

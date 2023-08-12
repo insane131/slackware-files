@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# /etc/rc.d/rc.local:  Local system initialization script.
+#
+# Put any local startup commands in here.  Also, if you have
+# anything that needs to be run at shutdown time you can
+# make an /etc/rc.d/rc.local_shutdown script and put those
+# commands in there.
+/usr/sbin/ntpdate pool.ntp.org
+
+if [ -x /etc/rc.d/rc.vm-net ]; then
+  /etc/rc.d/rc.vm-net start
+fi
+
+if [ -x /etc/rc.d/rc.gluster ]; then
+  /etc/rc.d/rc.gluster start
+echo Waiting for gluster to come online...
+/bin/sleep 5
+fi
+
+if [ -x /etc/rc.d/rc.vpn ]; then
+  /etc/rc.d/rc.vpn start
+fi
+
+
+/usr/bin/distccd --user distcc --allow 10.1.31.0/24 --daemon
+
+#/sbin/mount /mnt/mirror
+#/bin/sleep 5
+
+#/sbin/mount /home
+#/bin/sleep 5
+
+if [ -x /usr/sbin/zabbix_agentd ]; then
+    echo "Starting zabbix agent:  /usr/sbin/zabbix_agentd"
+    /usr/sbin/zabbix_agentd
+fi
+
+if [ -x /home/insane131/vms/server/vm-auto.sh ]; then
+  echo "Starting server VM: /home/insane131/vms/server/vm-auto.sh"
+  /home/insane131/vms/server/vm-auto.sh
+fi
